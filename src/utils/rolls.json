@@ -1,0 +1,93 @@
+[
+  {
+    "id": "1",
+    "name": "lines",
+    "color": "bg-red-500",
+    "icon": "icon-Vector",
+    "iconColor": "fill-white"
+  },
+  {
+    "id": "2",
+    "name": "lines",
+    "color": "bg-gray-500",
+    "icon": "icon-Vector",
+    "iconColor": "fill-white"
+  },
+  {
+    "id": "3",
+    "name": "crown",
+    "color": "bg-red-500",
+    "icon": "icon-Vector",
+    "iconColor": "fill-black"
+  },
+  {
+    "id": "4",
+    "name": "lines",
+    "color": "bg-gray-500",
+    "icon": "icon-Vector",
+    "iconColor": "fill-white"
+  },
+  {
+    "id": "5",
+    "name": "lines",
+    "color": "bg-red-500",
+    "icon": "icon-Vector",
+    "iconColor": "fill-black"
+  },
+  {
+    "id": "6",
+    "name": "crown",
+    "color": "bg-gray-500",
+    "icon": "icon-Group",
+    "iconColor": "fill-white"
+  },
+  {
+    "id": "7",
+    "name": "lines",
+    "color": "bg-green-400",
+    "icon": "icon-Vector",
+    "iconColor": "fill-white"
+  },
+  {
+    "id": "8",
+    "name": "crown",
+    "color": "bg-red-500",
+    "icon": "icon-Group",
+    "iconColor": "fill-black"
+  },
+  {
+    "id": "9",
+    "name": "lines",
+    "color": "bg-gray-500",
+    "icon": "icon-Vector",
+    "iconColor": "fill-white"
+  },
+  {
+    "id": "10",
+    "name": "crown",
+    "color": "bg-red-500",
+    "icon": "icon-Vector",
+    "iconColor": "fill-black"
+  },
+  {
+    "id": "11",
+    "name": "lines",
+    "color": "bg-gray-500",
+    "icon": "icon-Vector",
+    "iconColor": "fill-white"
+  },
+  {
+    "id": "12",
+    "name": "lines",
+    "color": "bg-red-500",
+    "icon": "icon-Vector",
+    "iconColor": "fill-white"
+  },
+  {
+    "id": "13",
+    "name": "crown",
+    "color": "bg-gray-500",
+    "icon": "icon-Vector",
+    "iconColor": "fill-black"
+  }
+]
