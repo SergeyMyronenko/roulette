@@ -1,15 +1,22 @@
 [
   {
+    "id": "15",
+    "name": "crown",
+    "color": "bg-purple-500",
+    "icon": "icon-Group",
+    "iconColor": "fill-white"
+  },
+  {
     "id": "1",
     "name": "lines",
     "color": "bg-red-500",
     "icon": "icon-Vector",
-    "iconColor": "fill-white"
+    "iconColor": "fill-black"
   },
   {
     "id": "2",
     "name": "lines",
-    "color": "bg-gray-500",
+    "color": "bg-gray-700",
     "icon": "icon-Vector",
     "iconColor": "fill-white"
   },
@@ -23,7 +30,7 @@
   {
     "id": "4",
     "name": "lines",
-    "color": "bg-gray-500",
+    "color": "bg-gray-700",
     "icon": "icon-Vector",
     "iconColor": "fill-white"
   },
@@ -37,7 +44,7 @@
   {
     "id": "6",
     "name": "crown",
-    "color": "bg-gray-500",
+    "color": "bg-gray-700",
     "icon": "icon-Group",
     "iconColor": "fill-white"
   },
@@ -58,7 +65,7 @@
   {
     "id": "9",
     "name": "lines",
-    "color": "bg-gray-500",
+    "color": "bg-gray-700",
     "icon": "icon-Vector",
     "iconColor": "fill-white"
   },
@@ -72,7 +79,7 @@
   {
     "id": "11",
     "name": "lines",
-    "color": "bg-gray-500",
+    "color": "bg-gray-700",
     "icon": "icon-Vector",
     "iconColor": "fill-white"
   },
@@ -81,13 +88,20 @@
     "name": "lines",
     "color": "bg-red-500",
     "icon": "icon-Vector",
-    "iconColor": "fill-white"
+    "iconColor": "fill-black"
   },
   {
     "id": "13",
     "name": "crown",
-    "color": "bg-gray-500",
+    "color": "bg-gray-700",
     "icon": "icon-Vector",
-    "iconColor": "fill-black"
+    "iconColor": "fill-white"
+  },
+  {
+    "id": "14",
+    "name": "crown",
+    "color": "bg-purple-500",
+    "icon": "icon-Group",
+    "iconColor": "fill-white"
   }
 ]
