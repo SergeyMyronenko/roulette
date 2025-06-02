@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import rolls from "@/utils/rolls.json";
 import clsx from "clsx";
-import { motion, useAnimation } from "framer-motion";
+import { motion, percent, useAnimation } from "framer-motion";
 
 export const MainPage = () => {
   const [recentRolls, setRecentRolls] = useState([]);
@@ -14,8 +14,13 @@ export const MainPage = () => {
   const [purpleField, setPurpleField] = useState([]);
   const [userBalance, setUserBalance] = useState(1000);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isRolling, setIsRolling] = useState(false);
-  const [counter, setCounter] = useState(5);
+  const [isRolling, setIsRolling] = useState(true);
+  const [time, setTime] = useState({ seconds: 5, milliseconds: 99 });
+  const [percent, setPercent] = useState(5);
+  const [duration, setDuration] = useState(time.seconds);
+  console.log(duration);
+
+  const rollContainerRef = useRef();
 
   const handleInputValue = (e) => {
     const value = Number(e.target.value);
@@ -25,7 +30,7 @@ export const MainPage = () => {
   };
 
   const handleBet = (color) => {
-    if (!inputValue || inputValue === 0) return;
+    if (!inputValue || inputValue === 0 || !isRolling) return;
 
     switch (color) {
       case "red":
@@ -73,101 +78,151 @@ export const MainPage = () => {
   };
 
   const startRoll = () => {
-    setIsRolling(true);
-    const randomIndex = Math.floor(Math.random() * rolls.length);
-    setSelectedIndex(randomIndex);
+    const disableRandom = false;
+    const customIndex = 4;
 
-    const winner = rolls[randomIndex];
+    const rollItem = disableRandom
+      ? customIndex
+      : Math.floor(Math.random() * rolls.length);
+    console.log(rollItem);
+
+    setSelectedIndex(rollItem);
+
+    const winner = rolls[rollItem];
 
     setRecentRolls((prev) => [...prev, winner]);
+    setRedField([]);
+    setGreenField([]);
+    setBlackField([]);
+    setPurpleField([]);
+    setInputValue("");
   };
 
+  const lastCounts = recentRolls.slice(-100).reduce(
+    (acc, roll) => {
+      if (roll.color === "bg-red-500") acc.red += 1;
+      else if (roll.color === "bg-gray-700") acc.gray += 1;
+      else if (roll.color === "bg-green-400") acc.green += 1;
+      else if (roll.color === "bg-purple-500") acc.purple += 1;
+
+      return acc;
+    },
+    { red: 0, gray: 0, green: 0, purple: 0 }
+  );
+
   useEffect(() => {
-    if (counter === 0) {
-      setIsRolling(false);
-      startRoll();
-      setCounter(5);
-      setRedField([]);
-      setGreenField([]);
-      setBlackField([]);
-      setPurpleField([]);
-      setInputValue("");
-      return;
-    }
+    if (!isRolling) return;
 
-    const timer = setTimeout(() => {
-      setCounter((prevCounter) => prevCounter - 1);
-    }, 1000);
+    const localDuration = duration;
+    const start = Date.now();
 
-    return () => clearTimeout(timer);
-  }, [counter]);
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const elapsed = (now - start) / 1000;
+
+      const timeLeft = Math.max(0, 100 - (elapsed / localDuration) * 100);
+      setPercent(timeLeft);
+
+      const remaining = Math.max(0, localDuration - elapsed);
+      const seconds = Math.floor(remaining);
+      const milliseconds = Math.floor((remaining - seconds) * 100);
+      setTime({ seconds, milliseconds });
+
+      if (remaining <= 0) {
+        clearInterval(interval);
+        setIsRolling(false);
+        setPercent(0);
+
+        setTimeout(() => {
+          setDuration(5);
+          setTime({ seconds: 5, milliseconds: 99 });
+          setIsRolling(true);
+        }, 1000);
+      }
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [isRolling]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setIsRolling(true), 1000);
+    return () => clearTimeout(timeout);
+  }, []);
 
   return (
-    <div className="w-[1280px] ml-auto mr-auto overflow-hidden py-6">
+    <div className="w-[1280px] ml-auto mr-auto py-6">
       <div className="flex justify-between mb-8 h-9">
         <ul className="flex w-[356px] overflow-hidden gap-1">
-          {recentRolls.map((roll) => (
-            <li
-              key={roll.id}
-              className={`w-8 h-8 border-sm ${roll.color} flex justify-center items-center rounded-sm shrink-0`}
-            >
-              <svg className={`w-4 h-[7px] ${roll.iconColor}`}>
-                <use href={`/icons/sprite.svg#${roll.icon}`}></use>
-              </svg>
-            </li>
-          ))}
+          {recentRolls &&
+            recentRolls.slice(-10).map((roll, index) => (
+              <li
+                key={index}
+                className={`w-8 h-8 border-sm ${roll.color} flex justify-center items-center rounded-sm shrink-0 border-t-2 border-white/30`}
+              >
+                <svg className={`w-4 h-[7px] ${roll.iconColor}`}>
+                  <use href={`/icons/sprite.svg#${roll.icon}`}></use>
+                </svg>
+              </li>
+            ))}
         </ul>
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium text-white/40">Last 100</p>
           <ul className="flex gap-4 items-center">
-            <li className="flex gap-4 items-center">
-              <span className="w-6 h-6 bg-red-500 rounded-[4px] flex justify-center items-center">
+            <li className="flex gap-2 items-center">
+              <span className="w-6 h-6 bg-red-500 rounded-[4px] flex justify-center items-center border-t-2 border-white/30">
                 <svg className="w-[12px] h-[6px] fill-black">
                   <use href="/icons/sprite.svg#icon-Vector"></use>
                 </svg>
               </span>
-              <span className="text-sm font-bold">39</span>
+              <span className="text-sm font-bold">{lastCounts.red ?? 0}</span>
             </li>
-            <li className="flex gap-2">
-              <span className="w-6 h-6 bg-gray-700 rounded-[4px] flex justify-center items-center">
+            <li className="flex gap-2 items-center">
+              <span className="w-6 h-6 bg-gray-700 rounded-[4px] flex justify-center items-center border-t-2 border-white/30">
                 <svg className="w-[12px] h-[6px] fill-white">
                   <use href="/icons/sprite.svg#icon-Vector"></use>
                 </svg>
               </span>
-              <span className="text-sm font-bold">39</span>
+              <span className="text-sm font-bold">{lastCounts.gray ?? 0}</span>
             </li>
-            <li className="flex gap-2">
-              <span className="w-6 h-6 bg-green-400 rounded-[4px] flex justify-center items-center">
+            <li className="flex gap-2 items-center">
+              <span className="w-6 h-6 bg-green-400 rounded-[4px] flex justify-center items-center border-t-2 border-white/30">
                 <svg className="w-[12px] h-[6px] fill-white">
                   <use href="/icons/sprite.svg#icon-Vector"></use>
                 </svg>
               </span>
-              <span className="text-sm font-bold">9</span>
+              <span className="text-sm font-bold">{lastCounts.green ?? 0}</span>
             </li>
-            <li className="flex gap-2">
-              <span className="w-6 h-6 bg-purple-500 rounded-[4px] flex justify-center items-center">
+            <li className="flex gap-2 items-center">
+              <span className="w-6 h-6 bg-purple-500 rounded-[4px] flex justify-center items-center border-t-2 border-white/30">
                 <svg className="w-[14px] h-[14px] fill-white">
                   <use href="/icons/sprite.svg#icon-Group"></use>
                 </svg>
               </span>
-              <span className="text-sm font-bold">13</span>
+              <span className="text-sm font-bold">
+                {lastCounts.purple ?? 0}
+              </span>
             </li>
           </ul>
         </div>
       </div>
-      <div className="flex justify-center mb-9 relative">
-        <motion.ul
-          className="flex gap-2"
-          animate={{
-            x: isRolling
-              ? `-${selectedIndex * 102}px` // ширина item + gap
-              : 0,
-          }}
-          transition={{ duration: 4, ease: "easeInOut" }}
+      <div className="flex justify-center relative overflow-hidden mb-2">
+        <ul
+          // ref={rollContainerRef}
+          className="flex gap-2 animate-scroll whitespace-nowrap"
+          // animate={{
+          //   x:
+          //     selectedIndex !== null
+          //       ? `-${selectedIndex * 104 - window.innerWidth / 2 + 52}px`
+          //       : 0,
+          // }}
+          // transition={{
+          //   duration: 1,
+          //   ease: "easeInOut",
+          // }}
         >
-          {rolls.map((roll) => (
+          {rolls.map((roll, index) => (
             <li
-              key={roll.id}
+              key={index}
               className={`w-[100px] h-[100px] ${roll.color} flex justify-center items-center rounded-lg border-t-2 border-white/30`}
             >
               <svg
@@ -180,16 +235,23 @@ export const MainPage = () => {
               </svg>
             </li>
           ))}
-        </motion.ul>
+        </ul>
+
+        <div className="absolute left-0 top-0 h-full w-[100px] bg-gradient-to-r from-[#0a0a0c] to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute right-0 top-0 h-full w-[100px] bg-gradient-to-l from-[#0a0a0c] to-transparent z-10 pointer-events-none"></div>
         <div className="bg-gray-800/50 absolute w-full h-full flex flex-col justify-center items-center">
           <p className="uppercase text-white text-sm font-medium">
             Rolling in:
           </p>
           <span className="text-white text-xl font-bold uppercase">
-            {counter}
+            {time.seconds}.
+            {time.milliseconds < 10
+              ? `0${time.milliseconds}`
+              : time.milliseconds}
           </span>
         </div>
       </div>
+      <div className={`w-${percent} h-0.5 bg-amber-600 mb-9`}></div>
       <div className="w-[500px] flex p-1 mr-auto ml-auto h-11 items-center justify-between mb-8">
         <div className="flex items-center gap-2">
           <img
@@ -202,7 +264,7 @@ export const MainPage = () => {
               type="number"
               value={inputValue}
               onChange={handleInputValue}
-              className="w-[240px] h-8 border-gray-700 border-2 rounded-lg appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="w-[240px] h-8 border-gray-700 border-2 rounded-lg appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none p-1"
             />
             <button
               className="absolute top-1.5 right-1 text-[8px] text-gray-600 bg-gray-900 rounded-lg px-2 py-1 hover:scale-105"
