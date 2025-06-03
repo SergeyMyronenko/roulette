@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import rolls from "@/utils/rolls.json";
 import clsx from "clsx";
-import { motion, percent, useAnimation } from "framer-motion";
 
 export const MainPage = () => {
   const [recentRolls, setRecentRolls] = useState([]);
@@ -13,14 +12,13 @@ export const MainPage = () => {
   const [blackField, setBlackField] = useState([]);
   const [purpleField, setPurpleField] = useState([]);
   const [userBalance, setUserBalance] = useState(1000);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(8);
   const [isRolling, setIsRolling] = useState(true);
   const [time, setTime] = useState({ seconds: 5, milliseconds: 99 });
-  const [percent, setPercent] = useState(5);
-  const [duration, setDuration] = useState(time.seconds);
-  console.log(duration);
+  const [progress, setProgress] = useState(100);
+  const [isVisible, setIsVisible] = useState(true);
 
-  const rollContainerRef = useRef();
+  const wrapperRef = useRef(null);
 
   const handleInputValue = (e) => {
     const value = Number(e.target.value);
@@ -74,21 +72,43 @@ export const MainPage = () => {
       (accum, currentValue) => accum + currentValue,
       0
     );
-    return total;
+    return total.toFixed(2);
+  };
+
+  const centerIcon = (index) => {
+    if (!wrapperRef.current) return;
+
+    const wrapper = wrapperRef.current;
+    const icon = wrapper.children[index];
+    if (!icon) return;
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const iconRect = icon.getBoundingClientRect();
+
+    const iconLeftRelative = icon.offsetLeft;
+
+    const wrapperCenter = wrapperRect.width / 2;
+
+    const scrollTo = iconLeftRelative - wrapperCenter + iconRect.width / 2;
+
+    wrapper.scrollTo({ left: scrollTo, behavior: "smooth" });
   };
 
   const startRoll = () => {
     const disableRandom = false;
     const customIndex = 4;
 
+    const minIndex = 6;
+    const maxIndex = 18;
+
     const rollItem = disableRandom
       ? customIndex
-      : Math.floor(Math.random() * rolls.length);
-    console.log(rollItem);
-
+      : Math.floor(Math.random() * (maxIndex - minIndex + 1) + minIndex);
     setSelectedIndex(rollItem);
 
     const winner = rolls[rollItem];
+
+    centerIcon(rollItem);
 
     setRecentRolls((prev) => [...prev, winner]);
     setRedField([]);
@@ -113,33 +133,32 @@ export const MainPage = () => {
   useEffect(() => {
     if (!isRolling) return;
 
-    const localDuration = duration;
-    const start = Date.now();
+    const countdownTime = time.seconds * 1000;
+    const endTime = Date.now() + countdownTime;
+    const updateInterval = 10;
 
     const interval = setInterval(() => {
-      const now = Date.now();
-      const elapsed = (now - start) / 1000;
-
-      const timeLeft = Math.max(0, 100 - (elapsed / localDuration) * 100);
-      setPercent(timeLeft);
-
-      const remaining = Math.max(0, localDuration - elapsed);
-      const seconds = Math.floor(remaining);
-      const milliseconds = Math.floor((remaining - seconds) * 100);
-      setTime({ seconds, milliseconds });
+      const remaining = endTime - Date.now();
 
       if (remaining <= 0) {
         clearInterval(interval);
+        setIsVisible(false);
         setIsRolling(false);
-        setPercent(0);
+        startRoll();
 
         setTimeout(() => {
-          setDuration(5);
-          setTime({ seconds: 5, milliseconds: 99 });
           setIsRolling(true);
-        }, 1000);
+          setTime({ seconds: 5, milliseconds: 99 });
+          setProgress(100);
+          setIsVisible(true);
+        }, 2000);
+      } else {
+        const seconds = Math.floor(remaining / 1000);
+        const milliseconds = remaining % 1000;
+        setTime({ seconds, milliseconds });
+        setProgress((remaining / countdownTime) * 100);
       }
-    }, 50);
+    }, updateInterval);
 
     return () => clearInterval(interval);
   }, [isRolling]);
@@ -205,25 +224,24 @@ export const MainPage = () => {
           </ul>
         </div>
       </div>
+
       <div className="flex justify-center relative overflow-hidden mb-2">
+        <svg className="w-4 h-4 absolute top-0.5  z-20 fill-amber-300">
+          <use href="/icons/sprite.svg#icon-down-arrow"></use>
+        </svg>
+        {!isVisible && (
+          <span className="w-[100px] h-[100px] rounded-lg border-2 border-amber-300 absolute mx-auto z-20 top-2"></span>
+        )}
         <ul
-          // ref={rollContainerRef}
-          className="flex gap-2 animate-scroll whitespace-nowrap"
-          // animate={{
-          //   x:
-          //     selectedIndex !== null
-          //       ? `-${selectedIndex * 104 - window.innerWidth / 2 + 52}px`
-          //       : 0,
-          // }}
-          // transition={{
-          //   duration: 1,
-          //   ease: "easeInOut",
-          // }}
+          className="flex gap-2 whitespace-nowrap overflow-x-auto hide-scrollbar py-2"
+          ref={wrapperRef}
         >
           {rolls.map((roll, index) => (
             <li
               key={index}
-              className={`w-[100px] h-[100px] ${roll.color} flex justify-center items-center rounded-lg border-t-2 border-white/30`}
+              className={clsx(
+                `w-[100px] h-[100px] ${roll.color} flex justify-center items-center rounded-lg flex-shrink-0 border-t-2 border-white/30`
+              )}
             >
               <svg
                 className={clsx(
@@ -239,19 +257,26 @@ export const MainPage = () => {
 
         <div className="absolute left-0 top-0 h-full w-[100px] bg-gradient-to-r from-[#0a0a0c] to-transparent z-10 pointer-events-none"></div>
         <div className="absolute right-0 top-0 h-full w-[100px] bg-gradient-to-l from-[#0a0a0c] to-transparent z-10 pointer-events-none"></div>
-        <div className="bg-gray-800/50 absolute w-full h-full flex flex-col justify-center items-center">
-          <p className="uppercase text-white text-sm font-medium">
-            Rolling in:
-          </p>
-          <span className="text-white text-xl font-bold uppercase">
-            {time.seconds}.
-            {time.milliseconds < 10
-              ? `0${time.milliseconds}`
-              : time.milliseconds}
-          </span>
-        </div>
+        {isVisible && (
+          <div className="bg-gray-800/50 absolute w-full h-full flex flex-col justify-center items-center">
+            <p className="uppercase text-white text-sm font-medium">
+              Rolling in:
+            </p>
+            <span className="text-white text-xl font-bold uppercase">
+              {time.seconds}.
+              {time.milliseconds < 10
+                ? `0${time.milliseconds}`
+                : Math.floor(time.milliseconds / 10)
+                    .toString()
+                    .padStart(2, "0")}
+            </span>
+          </div>
+        )}
       </div>
-      <div className={`w-${percent} h-0.5 bg-amber-600 mb-9`}></div>
+      <div
+        className={`h-0.5 bg-amber-600 mb-9`}
+        style={{ width: `${progress}%` }}
+      ></div>
       <div className="w-[500px] flex p-1 mr-auto ml-auto h-11 items-center justify-between mb-8">
         <div className="flex items-center gap-2">
           <img
