@@ -12,9 +12,8 @@ export const MainPage = () => {
   const [blackField, setBlackField] = useState([]);
   const [purpleField, setPurpleField] = useState([]);
   const [userBalance, setUserBalance] = useState(1000);
-  const [selectedIndex, setSelectedIndex] = useState(8);
   const [isRolling, setIsRolling] = useState(true);
-  const [time, setTime] = useState({ seconds: 5, milliseconds: 99 });
+  const [time, setTime] = useState({ seconds: 59, milliseconds: 99 });
   const [progress, setProgress] = useState(100);
   const [isVisible, setIsVisible] = useState(true);
 
@@ -104,7 +103,6 @@ export const MainPage = () => {
     const rollItem = disableRandom
       ? customIndex
       : Math.floor(Math.random() * (maxIndex - minIndex + 1) + minIndex);
-    setSelectedIndex(rollItem);
 
     const winner = rolls[rollItem];
 
@@ -148,7 +146,7 @@ export const MainPage = () => {
 
         setTimeout(() => {
           setIsRolling(true);
-          setTime({ seconds: 5, milliseconds: 99 });
+          setTime({ seconds: 59, milliseconds: 99 });
           setProgress(100);
           setIsVisible(true);
         }, 2000);
@@ -162,11 +160,6 @@ export const MainPage = () => {
 
     return () => clearInterval(interval);
   }, [isRolling]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setIsRolling(true), 1000);
-    return () => clearTimeout(timeout);
-  }, []);
 
   return (
     <div className="w-[1280px] ml-auto mr-auto py-6">
