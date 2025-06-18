@@ -1,4 +1,5 @@
-import { MainPage } from "@/components/MainPage";
+import { MainPage } from "../components/MainPage";
+import React from "react";
 
 export default function Home() {
   return (

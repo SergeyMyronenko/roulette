@@ -1,32 +1,54 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import rolls from "@/utils/rolls.json";
+import { ChangeEvent, Key, useEffect, useRef, useState } from "react";
+import rolls from "../utils/rolls.json";
 import clsx from "clsx";
+import React from "react";
+import Image from "next/image";
+
+type Rolls = {
+  id: number;
+  name: string;
+  color: string;
+  icon: string;
+  iconColor: string;
+};
+
+type Time = {
+  seconds: number;
+  milliseconds: number;
+};
+
+type LastCounts = {
+  red: number;
+  green: number;
+  gray: number;
+  purple: number;
+};
 
 export const MainPage = () => {
-  const [recentRolls, setRecentRolls] = useState([]);
-  const [inputValue, setInputValue] = useState("");
-  const [greenField, setGreenField] = useState([]);
-  const [redField, setRedField] = useState([]);
-  const [blackField, setBlackField] = useState([]);
-  const [purpleField, setPurpleField] = useState([]);
-  const [userBalance, setUserBalance] = useState(1000);
-  const [isRolling, setIsRolling] = useState(true);
-  const [time, setTime] = useState({ seconds: 59, milliseconds: 99 });
-  const [progress, setProgress] = useState(100);
-  const [isVisible, setIsVisible] = useState(true);
+  const [recentRolls, setRecentRolls] = useState<Rolls[]>([]);
+  const [inputValue, setInputValue] = useState<number>(null);
+  const [greenField, setGreenField] = useState<number[]>([]);
+  const [redField, setRedField] = useState<number[]>([]);
+  const [blackField, setBlackField] = useState<number[]>([]);
+  const [purpleField, setPurpleField] = useState<number[]>([]);
+  const [userBalance, setUserBalance] = useState<number>(1000);
+  const [isRolling, setIsRolling] = useState<boolean>(true);
+  const [time, setTime] = useState<Time>({ seconds: 59, milliseconds: 99 });
+  const [progress, setProgress] = useState<number>(100);
+  const [isVisible, setIsVisible] = useState<boolean>(true);
 
   const wrapperRef = useRef(null);
 
-  const handleInputValue = (e) => {
+  const handleInputValue = (e: ChangeEvent<HTMLInputElement>): void => {
     const value = Number(e.target.value);
     if (!isNaN(value)) {
       setInputValue(value);
     }
   };
 
-  const handleBet = (color) => {
+  const handleBet = (color: string): void => {
     if (!inputValue || inputValue === 0 || !isRolling) return;
 
     switch (color) {
@@ -47,7 +69,7 @@ export const MainPage = () => {
     }
   };
 
-  const handleBetValue = (type) => {
+  const handleBetValue = (type: string): void => {
     setInputValue((prev) => {
       switch (type) {
         case "half":
@@ -63,18 +85,18 @@ export const MainPage = () => {
   };
 
   const handleReset = () => {
-    setInputValue("");
+    setInputValue(null);
   };
 
-  const totalBet = (array) => {
+  const totalBet = (array: number[]): string => {
     const total = array.reduce(
-      (accum, currentValue) => accum + currentValue,
+      (accum: number, currentValue: number) => accum + currentValue,
       0
     );
     return total.toFixed(2);
   };
 
-  const centerIcon = (index) => {
+  const centerIcon = (index: number) => {
     if (!wrapperRef.current) return;
 
     const wrapper = wrapperRef.current;
@@ -94,17 +116,17 @@ export const MainPage = () => {
   };
 
   const startRoll = () => {
-    const disableRandom = false;
-    const customIndex = 4;
+    const disableRandom: boolean = false;
+    const customIndex: number = 4;
 
-    const minIndex = 6;
-    const maxIndex = 18;
+    const minIndex: number = 6;
+    const maxIndex: number = 18;
 
-    const rollItem = disableRandom
+    const rollItem: number = disableRandom
       ? customIndex
       : Math.floor(Math.random() * (maxIndex - minIndex + 1) + minIndex);
 
-    const winner = rolls[rollItem];
+    const winner: Rolls = rolls[rollItem];
 
     centerIcon(rollItem);
 
@@ -113,10 +135,10 @@ export const MainPage = () => {
     setGreenField([]);
     setBlackField([]);
     setPurpleField([]);
-    setInputValue("");
+    setInputValue(null);
   };
 
-  const lastCounts = recentRolls.slice(-100).reduce(
+  const lastCounts: LastCounts = recentRolls.slice(-100).reduce(
     (acc, roll) => {
       if (roll.color === "bg-red-500") acc.red += 1;
       else if (roll.color === "bg-gray-700") acc.gray += 1;
@@ -135,8 +157,8 @@ export const MainPage = () => {
     const endTime = Date.now() + countdownTime;
     const updateInterval = 10;
 
-    const interval = setInterval(() => {
-      const remaining = endTime - Date.now();
+    const interval: NodeJS.Timeout = setInterval(() => {
+      const remaining: number = endTime - Date.now();
 
       if (remaining <= 0) {
         clearInterval(interval);
@@ -151,14 +173,15 @@ export const MainPage = () => {
           setIsVisible(true);
         }, 2000);
       } else {
-        const seconds = Math.floor(remaining / 1000);
-        const milliseconds = remaining % 1000;
+        const seconds: number = Math.floor(remaining / 1000);
+        const milliseconds: number = remaining % 1000;
         setTime({ seconds, milliseconds });
         setProgress((remaining / countdownTime) * 100);
       }
     }, updateInterval);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRolling]);
 
   return (
@@ -229,23 +252,28 @@ export const MainPage = () => {
           className="flex gap-2 whitespace-nowrap overflow-x-auto hide-scrollbar py-2"
           ref={wrapperRef}
         >
-          {rolls.map((roll, index) => (
-            <li
-              key={index}
-              className={clsx(
-                `w-[100px] h-[100px] ${roll.color} flex justify-center items-center rounded-lg flex-shrink-0 border-t-2 border-white/30`
-              )}
-            >
-              <svg
+          {rolls.map(
+            (
+              roll: { color: any; iconColor: any; name: string; icon: any },
+              index: Key
+            ) => (
+              <li
+                key={index}
                 className={clsx(
-                  `w-[50px] h-[24px] ${roll.iconColor}`,
-                  roll.name === "crown" && "w-[57px] h-[57px]"
+                  `w-[100px] h-[100px] ${roll.color} flex justify-center items-center rounded-lg flex-shrink-0 border-t-2 border-white/30`
                 )}
               >
-                <use href={`/icons/sprite.svg#${roll.icon}`}></use>
-              </svg>
-            </li>
-          ))}
+                <svg
+                  className={clsx(
+                    `w-[50px] h-[24px] ${roll.iconColor}`,
+                    roll.name === "crown" && "w-[57px] h-[57px]"
+                  )}
+                >
+                  <use href={`/icons/sprite.svg#${roll.icon}`}></use>
+                </svg>
+              </li>
+            )
+          )}
         </ul>
 
         <div className="absolute left-0 top-0 h-full w-[100px] bg-gradient-to-r from-[#0a0a0c] to-transparent z-10 pointer-events-none"></div>
@@ -272,15 +300,17 @@ export const MainPage = () => {
       ></div>
       <div className="w-[500px] flex p-1 mr-auto ml-auto h-11 items-center justify-between mb-8">
         <div className="flex items-center gap-2">
-          <img
+          <Image
             src="/images/icons.png"
             alt="icon counter"
-            className="w-4 h-4 block"
+            className=" block"
+            width={20}
+            height={20}
           />
           <div className="relative">
             <input
               type="number"
-              value={inputValue}
+              value={inputValue ?? ""}
               onChange={handleInputValue}
               className="w-[240px] h-8 border-gray-700 border-2 rounded-lg appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none p-1"
             />
@@ -334,10 +364,12 @@ export const MainPage = () => {
                 {redField.length > 0 ? `${redField.length}` : ""} Bets total
               </p>
               <div className="flex items-center gap-2">
-                <img
+                <Image
                   src="/images/icons.png"
                   alt="icon counter"
-                  className="w-5 h-5 block"
+                  className="block"
+                  width={20}
+                  height={20}
                 />
                 <span>{totalBet(redField)}</span>
               </div>
@@ -354,14 +386,21 @@ export const MainPage = () => {
                   className="flex justify-between items-center rounded-lg px-4 py-2"
                 >
                   <div className="flex items-center gap-1.5">
-                    <img src="/images/rank-icons.png" alt="icon rank" />
+                    <Image
+                      src="/images/rank-icons.png"
+                      alt="icon rank"
+                      width={16}
+                      height={16}
+                    />
                     <p>User</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <img
+                    <Image
                       src="/images/icons.png"
                       alt="icon counter"
-                      className="w-5 h-5 block"
+                      className="block"
+                      width={20}
+                      height={20}
                     />
                     <span>{field}</span>
                   </div>
@@ -382,10 +421,12 @@ export const MainPage = () => {
                 {greenField.length > 0 ? `${greenField.length}` : ""} Bets total
               </p>
               <div className="flex items-center gap-2">
-                <img
+                <Image
                   src="/images/icons.png"
                   alt="icon counter"
-                  className="w-5 h-5 block"
+                  className="block"
+                  width={20}
+                  height={20}
                 />
                 <span>{totalBet(greenField)}</span>
               </div>
@@ -397,14 +438,21 @@ export const MainPage = () => {
                   className="flex justify-between items-center rounded-lg px-4 py-2"
                 >
                   <div className="flex items-center gap-1.5">
-                    <img src="/images/rank-icons.png" alt="icon rank" />
+                    <Image
+                      src="/images/rank-icons.png"
+                      alt="icon rank"
+                      width={16}
+                      height={16}
+                    />
                     <p>User</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <img
+                    <Image
                       src="/images/icons.png"
                       alt="icon counter"
-                      className="w-5 h-5 block"
+                      className="block"
+                      width={20}
+                      height={20}
                     />
                     <span>{field}</span>
                   </div>
@@ -425,10 +473,12 @@ export const MainPage = () => {
                 {blackField.length > 0 ? `${blackField.length}` : ""} Bets total
               </p>
               <div className="flex items-center gap-2">
-                <img
+                <Image
                   src="/images/icons.png"
                   alt="icon counter"
-                  className="w-5 h-5 block"
+                  className="block"
+                  width={20}
+                  height={20}
                 />
                 <span>{totalBet(blackField)}</span>
               </div>
@@ -440,14 +490,21 @@ export const MainPage = () => {
                   className="flex justify-between items-center rounded-lg px-4 py-2"
                 >
                   <div className="flex items-center gap-1.5">
-                    <img src="/images/rank-icons.png" alt="icon rank" />
+                    <Image
+                      src="/images/rank-icons.png"
+                      alt="icon rank"
+                      width={16}
+                      height={16}
+                    />
                     <p>User</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <img
+                    <Image
                       src="/images/icons.png"
                       alt="icon counter"
-                      className="w-5 h-5 block"
+                      className="block"
+                      width={20}
+                      height={20}
                     />
                     <span>{field}</span>
                   </div>
@@ -469,10 +526,12 @@ export const MainPage = () => {
                 total
               </p>
               <div className="flex items-center gap-2">
-                <img
+                <Image
                   src="/images/icons.png"
                   alt="icon counter"
-                  className="w-5 h-5 block"
+                  className="block"
+                  width={20}
+                  height={20}
                 />
                 <span>{totalBet(purpleField)}</span>
               </div>
@@ -484,14 +543,21 @@ export const MainPage = () => {
                   className="flex justify-between items-center rounded-lg px-4 py-2"
                 >
                   <div className="flex items-center gap-1.5">
-                    <img src="/images/rank-icons.png" alt="icon rank" />
+                    <Image
+                      src="/images/rank-icons.png"
+                      alt="icon rank"
+                      width={16}
+                      height={16}
+                    />
                     <p>User</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <img
+                    <Image
                       src="/images/icons.png"
                       alt="icon counter"
-                      className="w-5 h-5 block"
+                      className="block"
+                      width={20}
+                      height={20}
                     />
                     <span>{field}</span>
                   </div>
