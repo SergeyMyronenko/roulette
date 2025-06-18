@@ -7,7 +7,7 @@ import React from "react";
 import Image from "next/image";
 
 type Rolls = {
-  id: number;
+  id: string;
   name: string;
   color: string;
   icon: string;
@@ -28,7 +28,7 @@ type LastCounts = {
 
 export const MainPage = () => {
   const [recentRolls, setRecentRolls] = useState<Rolls[]>([]);
-  const [inputValue, setInputValue] = useState<number>(null);
+  const [inputValue, setInputValue] = useState<number>(0);
   const [greenField, setGreenField] = useState<number[]>([]);
   const [redField, setRedField] = useState<number[]>([]);
   const [blackField, setBlackField] = useState<number[]>([]);
@@ -39,7 +39,7 @@ export const MainPage = () => {
   const [progress, setProgress] = useState<number>(100);
   const [isVisible, setIsVisible] = useState<boolean>(true);
 
-  const wrapperRef = useRef(null);
+  const wrapperRef = useRef<HTMLUListElement>(null);
 
   const handleInputValue = (e: ChangeEvent<HTMLInputElement>): void => {
     const value = Number(e.target.value);
@@ -85,7 +85,7 @@ export const MainPage = () => {
   };
 
   const handleReset = () => {
-    setInputValue(null);
+    setInputValue(0);
   };
 
   const totalBet = (array: number[]): string => {
@@ -100,7 +100,7 @@ export const MainPage = () => {
     if (!wrapperRef.current) return;
 
     const wrapper = wrapperRef.current;
-    const icon = wrapper.children[index];
+    const icon = wrapper.children[index] as HTMLElement | undefined;
     if (!icon) return;
 
     const wrapperRect = wrapper.getBoundingClientRect();
@@ -135,7 +135,7 @@ export const MainPage = () => {
     setGreenField([]);
     setBlackField([]);
     setPurpleField([]);
-    setInputValue(null);
+    setInputValue(0);
   };
 
   const lastCounts: LastCounts = recentRolls.slice(-100).reduce(
